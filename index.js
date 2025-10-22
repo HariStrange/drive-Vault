@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -14,9 +15,11 @@ app.get('/', (req, res) => {
   res.json({ message: 'Recruiting Company API - Multi-tenant System' });
 });
 
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
+// Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

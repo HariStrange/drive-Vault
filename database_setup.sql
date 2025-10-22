@@ -40,13 +40,21 @@ CREATE INDEX IF NOT EXISTS idx_verification_codes_code ON verification_codes(cod
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
 
+<<<<<<< HEAD
 -- Insert a default admin user (password: admin123)
+=======
+-- Insert a default admin user (password: sholas33)
+>>>>>>> 9bef2a1 (working backend)
 -- You should change this password after first login
 INSERT INTO users (email, name, password_hash, role, is_verified)
 VALUES (
   'admin@company.com',
   'System Admin',
+<<<<<<< HEAD
   '$2b$10$rQYvJ4qF8vXKx5kZXh5JH.mJ5FmKfqZYN5YqZHqZYN5YqZHqZYN5Y',
+=======
+  '$2b$10$h5EM4lr3thFIbnB/vxl0meSeGRkLf73HVQx2gnDKwu8nH9QV/HHiK',
+>>>>>>> 9bef2a1 (working backend)
   'admin',
   true
 )
@@ -54,4 +62,8 @@ ON CONFLICT (email) DO NOTHING;
 
 -- Display success message
 SELECT 'Database tables created successfully!' as message;
+<<<<<<< HEAD
 SELECT 'Default admin user: admin@company.com | password: admin123' as credentials;
+=======
+SELECT 'Default admin user: admin@company.com | password: sholas33' as credentials;
+>>>>>>> 9bef2a1 (working backend)
