@@ -40,21 +40,12 @@ CREATE INDEX IF NOT EXISTS idx_verification_codes_code ON verification_codes(cod
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
 
-<<<<<<< HEAD
--- Insert a default admin user (password: admin123)
-=======
--- Insert a default admin user (password: sholas33)
->>>>>>> 9bef2a1 (working backend)
 -- You should change this password after first login
 INSERT INTO users (email, name, password_hash, role, is_verified)
 VALUES (
   'admin@company.com',
   'System Admin',
-<<<<<<< HEAD
-  '$2b$10$rQYvJ4qF8vXKx5kZXh5JH.mJ5FmKfqZYN5YqZHqZYN5YqZHqZYN5Y',
-=======
   '$2b$10$h5EM4lr3thFIbnB/vxl0meSeGRkLf73HVQx2gnDKwu8nH9QV/HHiK',
->>>>>>> 9bef2a1 (working backend)
   'admin',
   true
 )
@@ -62,8 +53,35 @@ ON CONFLICT (email) DO NOTHING;
 
 -- Display success message
 SELECT 'Database tables created successfully!' as message;
-<<<<<<< HEAD
-SELECT 'Default admin user: admin@company.com | password: admin123' as credentials;
-=======
 SELECT 'Default admin user: admin@company.com | password: sholas33' as credentials;
->>>>>>> 9bef2a1 (working backend)
+
+
+-- Create passport_details table
+CREATE TABLE IF NOT EXISTS passport_details (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  
+  passport_type TEXT NOT NULL,
+  country_code TEXT NOT NULL,
+  passport_number TEXT UNIQUE NOT NULL,
+  full_name TEXT NOT NULL,
+  nationality TEXT NOT NULL,
+  sex TEXT NOT NULL,
+  date_of_birth DATE NOT NULL,
+  place_of_birth TEXT,
+  date_of_issue DATE NOT NULL,
+  date_of_expiry DATE NOT NULL,
+  place_of_issue TEXT,
+  father_name TEXT,
+  spouse_name TEXT,
+  address TEXT,
+  passport_photo TEXT,
+  signature TEXT,
+
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+-- Indexes for better lookup
+CREATE INDEX IF NOT EXISTS idx_passport_user_id ON passport_details(user_id);
+CREATE INDEX IF NOT EXISTS idx_passport_number ON passport_details(passport_number);
