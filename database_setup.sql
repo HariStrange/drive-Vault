@@ -85,3 +85,43 @@ CREATE TABLE IF NOT EXISTS passport_details (
 -- Indexes for better lookup
 CREATE INDEX IF NOT EXISTS idx_passport_user_id ON passport_details(user_id);
 CREATE INDEX IF NOT EXISTS idx_passport_number ON passport_details(passport_number);
+
+
+
+CREATE TABLE question_sets (
+    id SERIAL PRIMARY KEY,
+    set_name VARCHAR(50) NOT NULL,               -- e.g., 'Set A'
+    category VARCHAR(100) NOT NULL,              -- e.g., 'driver', 'welder'
+    total_questions INT DEFAULT 0,
+    created_by INT,                              -- admin user id
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+CREATE TABLE questions (
+    id SERIAL PRIMARY KEY,
+    question_set_id INT NOT NULL REFERENCES question_sets(id) ON DELETE CASCADE,
+    question_text TEXT,                          -- text question
+    question_image_url TEXT,                     -- image path/url
+    question_type VARCHAR(20) DEFAULT 'text',    -- 'text' | 'image'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+CREATE TABLE question_options (
+    id SERIAL PRIMARY KEY,
+    question_id INT NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+    option_text TEXT NOT NULL,
+    is_correct BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE user_question_sets (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    question_set_id INT NOT NULL REFERENCES question_sets(id),
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

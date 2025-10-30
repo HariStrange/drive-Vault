@@ -1,7 +1,7 @@
 const express = require("express");
 const pool = require("../config/db");
 const { authenticateToken } = require("../middleware/auth");
-const upload = require('../middleware/upload')
+const upload = require("../middleware/upload");
 
 const router = express.Router();
 
@@ -65,12 +65,10 @@ router.post(
         ]
       );
 
-      res
-        .status(201)
-        .json({
-          message: "Passport created successfully",
-          passport: result.rows[0],
-        });
+      res.status(201).json({
+        message: "Passport created successfully",
+        passport: result.rows[0],
+      });
     } catch (error) {
       console.error("Create passport error:", error);
       res.status(500).json({ error: "Failed to create passport" });
@@ -112,36 +110,89 @@ router.get("/me", authenticateToken, async (req, res) => {
 });
 
 // Update passport by user
-router.put("/me", authenticateToken, async (req, res) => {
-  const fields = Object.keys(req.body);
-  const values = Object.values(req.body);
+router.put(
+  "/me",
+  authenticateToken,
+  upload.fields([
+    { name: "passport_photo", maxCount: 1 },
+    { name: "signature", maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const {
+        passport_type,
+        country_code,
+        passport_number,
+        full_name,
+        nationality,
+        sex,
+        date_of_birth,
+        place_of_birth,
+        date_of_issue,
+        date_of_expiry,
+        place_of_issue,
+        father_name,
+        spouse_name,
+        address,
+      } = req.body;
 
-  if (fields.length === 0)
-    return res.status(400).json({ error: "No fields to update" });
+      const passport_photo = req.files["passport_photo"]?.[0]?.filename || null;
+      const signature = req.files["signature"]?.[0]?.filename || null;
 
-  const setClause = fields.map((f, i) => `${f} = $${i + 2}`).join(", ");
+      // build dynamic update
+      const fields = [];
+      const values = [req.user.id];
+      let i = 2;
 
-  try {
-    const result = await pool.query(
-      `UPDATE passport_details
-       SET ${setClause}, updated_at = now()
-       WHERE user_id = $1
-       RETURNING *`,
-      [req.user.id, ...values]
-    );
+      const addField = (key, value) => {
+        if (value !== undefined && value !== null && value !== "") {
+          fields.push(`${key} = $${i++}`);
+          values.push(value);
+        }
+      };
 
-    if (result.rows.length === 0)
-      return res.status(404).json({ error: "Passport record not found" });
+      addField("passport_type", passport_type);
+      addField("country_code", country_code);
+      addField("passport_number", passport_number);
+      addField("full_name", full_name);
+      addField("nationality", nationality);
+      addField("sex", sex);
+      addField("date_of_birth", date_of_birth);
+      addField("place_of_birth", place_of_birth);
+      addField("date_of_issue", date_of_issue);
+      addField("date_of_expiry", date_of_expiry);
+      addField("place_of_issue", place_of_issue);
+      addField("father_name", father_name);
+      addField("spouse_name", spouse_name);
+      addField("address", address);
+      if (passport_photo) addField("passport_photo", passport_photo);
+      if (signature) addField("signature", signature);
 
-    res.json({
-      message: "Passport details updated successfully",
-      passport: result.rows[0],
-    });
-  } catch (error) {
-    console.error("Update passport error:", error);
-    res.status(500).json({ error: "Failed to update passport details" });
+      if (fields.length === 0)
+        return res.status(400).json({ error: "No fields to update" });
+
+      const query = `
+        UPDATE passport_details
+        SET ${fields.join(", ")}, updated_at = now()
+        WHERE user_id = $1
+        RETURNING *;
+      `;
+
+      const result = await pool.query(query, values);
+
+      if (result.rows.length === 0)
+        return res.status(404).json({ error: "Passport record not found" });
+
+      res.json({
+        message: "Passport updated successfully",
+        passport: result.rows[0],
+      });
+    } catch (error) {
+      console.error("Update passport error:", error);
+      res.status(500).json({ error: "Failed to update passport details" });
+    }
   }
-});
+);
 
 // Delete passport (Admin only)
 router.delete("/:id", authenticateToken, async (req, res) => {
