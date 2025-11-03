@@ -41,7 +41,7 @@ app.use("/api/quizz", quizzRoutes); // Frontend: POST /api/quizz/assign-set
 app.use("/uploads/passports", express.static(path.join(__dirname, "uploads/passports")));
 
 // Static files for Quiz Images (match your multer dest in quizUpload.js)
-app.use("/uploads/quizzes", express.static(path.join(__dirname, "uploads/quizzes"))); // ✅ Fixed: Use "uploads/quizzes" (update multer dest if needed)
+app.use("/uploads/quizzes", express.static(path.join(__dirname, "uploads/quiz_images"))); // ✅ Fixed: Use "uploads/quizzes" (update multer dest if needed)
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -58,11 +58,4 @@ app.use((req, res) => {
 // Start Server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
-  console.log(`🌐 API Endpoints:`);
-  console.log(`   - Sets: GET/POST /api/question-sets`);
-  console.log(`   - Questions: POST /api/questions, GET /api/questions/:setId`);
-  console.log(`   - Options: POST /api/options`);
-  console.log(`   - Assign: POST /api/quizz/assign-set`);
-  console.log(`   - Users: GET /api/users/admin/all-users`);
-  console.log(`📁 Static: /uploads/passports & /uploads/quizzes`);
 });

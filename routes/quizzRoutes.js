@@ -132,16 +132,36 @@ router.post("/assign-set", authenticateToken, async (req, res) => {
     const randomSet =
       setsResult.rows[Math.floor(Math.random() * setsResult.rows.length)].id;
 
-    const assignResult = await pool.query(
-      `INSERT INTO user_question_sets (user_id, question_set_id)
-       VALUES ($1, $2) RETURNING *`,
-      [user_id, randomSet]
+    const existingResult = await pool.query(
+      `SELECT uqs.id FROM user_question_sets uqs
+       JOIN question_sets qs ON uqs.question_set_id = qs.id
+       WHERE uqs.user_id = $1 AND qs.category = $2`,
+      [user_id, category]
     );
 
-    res.status(201).json({
-      message: "Set assigned successfully",
-      assigned: assignResult.rows[0],
-    });
+    let assignResult;
+    if (existingResult.rows.length > 0) {
+      const existingId = existingResult.rows[0].id;
+      assignResult = await pool.query(
+        `UPDATE user_question_sets SET question_set_id = $1 WHERE id = $2 RETURNING *`,
+        [randomSet, existingId]
+      );
+      res.status(200).json({
+        message: "Question set updated successfully",
+        assigned: assignResult.rows[0],
+      });
+    } else {
+      assignResult = await pool.query(
+        `INSERT INTO user_question_sets (user_id, question_set_id)
+         VALUES ($1, $2) RETURNING *`,
+        [user_id, randomSet]
+      );
+
+      res.status(201).json({
+        message: "Set assigned successfully",
+        assigned: assignResult.rows[0],
+      });
+    }
   } catch (error) {
     console.error("Assign set error:", error);
     res.status(500).json({ error: "Failed to assign question set" });
@@ -150,7 +170,36 @@ router.post("/assign-set", authenticateToken, async (req, res) => {
 
 /**
  * ===============================================
- * 5️⃣  FETCH QUESTIONS BY SET ID
+ * 5️⃣  FETCH ASSIGNED SETS BY CATEGORY
+ * ===============================================
+ */
+router.get("/assigned", authenticateToken, async (req, res) => {
+  try {
+    const { category } = req.query;
+
+    if (!category)
+      return res.status(400).json({ error: "category is required" });
+
+    const result = await pool.query(
+      `SELECT uqs.user_id, uqs.question_set_id, qs.set_name
+       FROM user_question_sets uqs
+       JOIN question_sets qs ON uqs.question_set_id = qs.id
+       WHERE qs.category = $1`,
+      [category]
+    );
+
+    res.json({
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error("Fetch assigned sets error:", error);
+    res.status(500).json({ error: "Failed to fetch assigned sets" });
+  }
+});
+
+/**
+ * ===============================================
+ * 6️⃣  FETCH QUESTIONS BY SET ID
  * ===============================================
  */
 router.get("/set/:id/questions", authenticateToken, async (req, res) => {

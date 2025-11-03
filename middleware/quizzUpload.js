@@ -2,7 +2,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-const quizDir = path.join(__dirname, "");
+const quizDir = path.join(__dirname, "../uploads/quiz_images");
 
 // ensure directory exists
 if (!fs.existsSync(quizDir)) {

@@ -93,7 +93,7 @@ CREATE TABLE question_sets (
     set_name VARCHAR(50) NOT NULL,               -- e.g., 'Set A'
     category VARCHAR(100) NOT NULL,              -- e.g., 'driver', 'welder'
     total_questions INT DEFAULT 0,
-    created_by INT,                              -- admin user id
+    created_by UUID,                              -- admin user id
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -121,7 +121,7 @@ CREATE TABLE question_options (
 
 CREATE TABLE user_question_sets (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     question_set_id INT NOT NULL REFERENCES question_sets(id),
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
